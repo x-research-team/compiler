@@ -1,0 +1,6 @@
+.history/
+.cache/
+.vscode/
+build/
+!misc/**
+.DS_Store

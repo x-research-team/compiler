@@ -1,0 +1,38 @@
+{
+    "version": 1,
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": ["/usr/include", "${workspaceFolder}/**"],
+            "browse" : {
+                "limitSymbolsToIncludedHeaders" : true,
+                "databaseFilename" : ""
+            },
+            "cppStandard": "c++20",
+            "cStandard": "c17",
+            "intelliSenseMode": "clang-x64"
+        },
+        {
+            "name": "Linux",
+            "includePath": ["/usr/include", "${workspaceFolder}/**"],
+            "browse" : {
+                "limitSymbolsToIncludedHeaders" : true,
+                "databaseFilename" : ""
+            },
+            "cppStandard": "c++20",
+            "cStandard": "c17",
+            "intelliSenseMode": "clang-x64"
+        },
+        {
+            "name": "Win32",
+            "includePath": ["c:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include", "${workspaceFolder}/**"],
+            "browse" : {
+                "limitSymbolsToIncludedHeaders" : true,
+                "databaseFilename" : ""
+            },
+            "cppStandard": "c++20",
+            "cStandard": "c17",
+            "intelliSenseMode": "clang-x64"
+        }
+    ]
+}
