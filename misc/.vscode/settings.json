@@ -1,9 +1,4 @@
 {
-    "workbench.colorCustomizations": {
-        "activityBar.background": "#00000000",
-        "titleBar.activeBackground": "#00000000",
-        "titleBar.activeForeground": "#F8FBF7"
-    },
     "files.exclude": {
         "**/.git": true,
         "**/.svn": true,
@@ -12,6 +7,8 @@
         "**/.DS_Store": true,
         ".cache": true,
         ".history": true,
-        ".editorconfig": true
+        ".editorconfig": true,
+        ".vscode": true,
+        "build": true
     },
 }
