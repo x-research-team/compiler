@@ -3,5 +3,15 @@
         "activityBar.background": "#00000000",
         "titleBar.activeBackground": "#00000000",
         "titleBar.activeForeground": "#F8FBF7"
-    }
+    },
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        ".cache": true,
+        ".history": true,
+        ".editorconfig": true
+    },
 }

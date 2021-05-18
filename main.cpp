@@ -1,6 +1,8 @@
 #include <iostream>
 
-int main(int, char**) {
-    auto s = "Hello, world!\n";
-    std::cout << s;
+#include "token/Token.hpp"
+
+int main(int, char **) {
+  Token::Token token(Token::Token::Type::Identifier, 'a');
+  std::cout << token.get_literal();
 }

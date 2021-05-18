@@ -4,7 +4,7 @@ project(compiler VERSION 0.1.0)
 include(CTest)
 enable_testing()
 
-add_executable(compiler main.cpp)
+add_executable(compiler main.cpp token/Token.hpp)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
