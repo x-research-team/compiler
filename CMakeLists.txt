@@ -4,7 +4,17 @@ project(compiler VERSION 0.1.0)
 include(CTest)
 enable_testing()
 
-add_executable(compiler main.cpp token/Token.hpp)
+set(Boost_USE_STATIC_LIBS        ON)  # only find static libs
+set(Boost_USE_DEBUG_LIBS        OFF)  # ignore debug libs and
+set(Boost_USE_RELEASE_LIBS       ON)  # only find release libs
+set(Boost_USE_MULTITHREADED      ON)
+set(Boost_USE_STATIC_RUNTIME    OFF)
+find_package(Boost 1.75 COMPONENTS date_time filesystem system)
+if(Boost_FOUND)
+  include_directories(${Boost_INCLUDE_DIRS})
+  add_executable(compiler main.cpp token/Token.hpp lexer/Lexer.hpp)
+  target_link_libraries(compiler ${Boost_LIBRARIES})
+endif()
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

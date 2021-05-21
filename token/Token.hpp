@@ -164,15 +164,6 @@ public:
    * @return true
    * @return false
    */
-  bool is(Type type) const { return this->type == type; }
-
-  /**
-   * @brief
-   *
-   * @param type
-   * @return true
-   * @return false
-   */
   bool operator==(const Type &type) { return is(type); }
 
   /**
@@ -194,5 +185,14 @@ private:
    * @brief Literal of token
    */
   string literal;
+
+  /**
+   * @brief
+   *
+   * @param type
+   * @return true
+   * @return false
+   */
+  bool is(Type type) const { return this->type == type; }
 };
 } // namespace Token
