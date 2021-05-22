@@ -2,9 +2,12 @@
 
 #include <boost/algorithm/string/trim.hpp>
 #include <cstdint>
+#include <functional>
+#include <map>
 #include <memory>
 #include <string>
 
+#include "../token/Keyword.hpp"
 #include "../token/Token.hpp"
 
 using namespace std;
@@ -118,6 +121,8 @@ private:
     }
   }
 
+  const map<string, function<shared_ptr<Token>()>> tokens = {};
+
   /**
    * @brief Read token literal
    *
@@ -180,6 +185,19 @@ private:
     return this->source.substr(position, this->position - 1);
   }
 
+  shared_ptr<Token> make_token(const string &literal, const uint64_t skip = 0) {
+    next(skip);
+    return make_shared<Token>(tokens.contains(literal) ? tokens.at(literal)()
+                                                       : make_shared<Token>());
+  }
+
+  shared_ptr<Token> make_token(const char character, const uint64_t skip = 0) {
+    next(skip);
+    auto literal = string(1, character);
+    return make_shared<Token>(tokens.contains(literal) ? tokens.at(literal)()
+                                                       : make_shared<Token>());
+  }
+
   /**
    * @brief Move to next token in source
    *
@@ -189,29 +207,47 @@ private:
     skip();
 
     if (this->character == 0) {
-      return make_shared<Token>(Token::Type::EndOfFile, this->character);
+      return make_token(this->character);
     }
 
     string literal;
 
     if (is(this->character).letter()) {
       literal.append(read(Reader::Identifier));
+      auto type = keyword::tokens.contains(literal)
+                      ? keyword::tokens.at(literal)
+                      : Token::Type::Identifier;
+      return make_shared<Token>(type, type != Token::Type::Identifier
+                                          ? keyword::literals.at(type)
+                                          : literal);
     }
 
     if (is(this->character).digit()) {
+      return make_shared<Token>(Token::Type::Number, read(Reader::Number));
     }
 
     auto character = string(1, this->character);
 
     if (is(this->character).string()) {
+      return make_token(character);
     }
 
     if (is(this->character).block()) {
+      return make_token(character, 1);
     }
 
     while (is(this->character).op()) {
+      auto peeked = peek();
+      if (is(this->character).signed_digit(peeked)) {
+        break; // hack for signed digit
+      }
+      literal.append(read(Reader::Literal));
+      if (!is(peeked).op()) {
+        break;
+      }
+      next();
     }
 
-    return nullptr;
+    return make_token(literal != "" ? literal : character);
   }
 };
