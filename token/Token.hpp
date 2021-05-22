@@ -5,11 +5,6 @@
 using namespace std;
 
 /**
- * @brief Token rules
- */
-namespace Token {
-
-/**
  * @brief Token
  */
 class Token {
@@ -195,4 +190,3 @@ private:
    */
   bool is(Type type) const { return this->type == type; }
 };
-} // namespace Token
