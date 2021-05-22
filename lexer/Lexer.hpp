@@ -2,8 +2,10 @@
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/format.hpp>
+#include <cctype>
 #include <cstddef>
 #include <cstdint>
+#include <ctype.h>
 #include <functional>
 #include <map>
 #include <memory>
@@ -24,8 +26,6 @@ private:
   private:
     char character;
 
-    bool is_digit(const char c) const { return c >= '0' || c <= '9'; }
-
   public:
     Comparator(const char character) { this->character = character; }
 
@@ -34,7 +34,7 @@ private:
              character == ' ';
     }
 
-    bool digit() const { return is_digit(character); }
+    bool digit() const { return isdigit(character); }
 
     /**
      * @brief Check character to kind of letter
@@ -43,13 +43,7 @@ private:
      * @return true if character in diapason from a-z or A-Z
      * @return false
      */
-    bool letter() const {
-      if (whitespace()) {
-        return false;
-      }
-      return character >= 'a' || character <= 'z' || character >= 'A' ||
-             character <= 'Z' || character == '_';
-    }
+    bool letter() const { return isalpha(character); }
 
     /**
      * @brief Check character to kind of string
@@ -78,7 +72,7 @@ private:
     }
 
     bool signed_digit(const char next) {
-      return character == '-' && is_digit(next);
+      return character == '-' && isdigit(next);
     };
   };
 
