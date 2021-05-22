@@ -139,6 +139,14 @@ public:
   }
 
   /**
+   * @brief Construct a new Token object
+   */
+  Token() {
+    this->type = Type::Illegal;
+    this->literal = "";
+  }
+
+  /**
    * @brief Get the Type
    *
    * @return Type
@@ -169,6 +177,16 @@ public:
    * @return false
    */
   bool operator!=(const Type &type) { return !is(type); }
+
+  /**
+   * @brief Check token is end of source code
+   *
+   * @return true if end
+   * @return false if not
+   */
+  bool end() const {
+    return this->is(Type::EndOfFile) || this->is(Type::Illegal);
+  }
 
 private:
   /**

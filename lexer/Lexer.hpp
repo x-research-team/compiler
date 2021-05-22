@@ -44,6 +44,9 @@ private:
      * @return false
      */
     bool letter() const {
+      if (whitespace()) {
+        return false;
+      }
       return character >= 'a' || character <= 'z' || character >= 'A' ||
              character <= 'Z' || character == '_';
     }
@@ -99,7 +102,7 @@ private:
    * @param step
    */
   void next(const uint64_t step = 1) {
-    for (size_t i = 0; i < step; i++) {
+    for (auto i = 0; i < step; i++) {
       this->character = peek(1);
       this->position = this->read_position;
       ++this->read_position;
@@ -126,7 +129,7 @@ private:
     }
   }
 
-  static map<string, function<shared_ptr<Token>()>> tokens;
+  map<string, function<shared_ptr<Token>()>> tokens;
 
   /**
    * @brief Read token literal
@@ -159,11 +162,11 @@ private:
           while (is(this->character).digit()) {
             next(); // Fill Secand part of number
           }
-          return this->source.substr(position, this->position - 1);
+          return this->source.substr(position, this->position - position);
         }
       }
       while (is(this->character).digit()) {
-        this->source.substr(position, this->position - 1);
+        next();
       }
       if (this->character == '.') {
         next(); // Skip dot for float
@@ -187,20 +190,20 @@ private:
       boost::algorithm::trim(literal);
       return literal;
     }
-    return this->source.substr(position, this->position - 1);
+    return this->source.substr(position, this->position - position);
   }
 
   shared_ptr<Token> make_token(const string &literal, const uint64_t skip = 0) {
     next(skip);
-    return make_shared<Token>(tokens.contains(literal) ? tokens.at(literal)()
-                                                       : make_shared<Token>());
+    return tokens.contains(literal) ? tokens.at(literal)()
+                                    : make_shared<Token>();
   }
 
   shared_ptr<Token> make_token(const char character, const uint64_t skip = 0) {
     next(skip);
     auto literal = string(1, character);
-    return make_shared<Token>(tokens.contains(literal) ? tokens.at(literal)()
-                                                       : make_shared<Token>());
+    return tokens.contains(literal) ? tokens.at(literal)()
+                                    : make_shared<Token>();
   }
 
 public:

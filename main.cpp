@@ -1,8 +1,13 @@
 #include <iostream>
 
-#include "token/Token.hpp"
+#include "lexer/Lexer.hpp"
+#include <boost/foreach.hpp>
 
-int main(int, char **) {
-  Token token(Token::Type::Identifier, 'a');
-  std::cout << token.get_literal();
+int main() {
+  auto lexer = make_shared<Lexer>("let a = 1;");
+  auto token = lexer->next_token();
+  while (!token->end()) {
+    token = lexer->next_token();
+    cout << (boost::format("[%2%]") % token->get_literal()).str() << endl;
+  }
 }

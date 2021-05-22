@@ -12,7 +12,7 @@ set(Boost_USE_STATIC_RUNTIME    OFF)
 find_package(Boost 1.75 COMPONENTS date_time filesystem system)
 if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
-  add_executable(compiler main.cpp token/Token.hpp lexer/Lexer.hpp)
+  add_executable(compiler main.cpp token/Token.hpp token/Blocks.hpp token/FlipMap.hpp token/Keyword.hpp token/Operators.hpp lexer/Lexer.hpp)
   target_link_libraries(compiler ${Boost_LIBRARIES})
 endif()
 
