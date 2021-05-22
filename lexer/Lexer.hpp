@@ -1,13 +1,18 @@
 #pragma once
 
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/format.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 
+#include "../token/Blocks.hpp"
 #include "../token/Keyword.hpp"
+#include "../token/Operators.hpp"
 #include "../token/Token.hpp"
 
 using namespace std;
@@ -121,7 +126,7 @@ private:
     }
   }
 
-  const map<string, function<shared_ptr<Token>()>> tokens = {};
+  static map<string, function<shared_ptr<Token>()>> tokens;
 
   /**
    * @brief Read token literal
@@ -196,6 +201,59 @@ private:
     auto literal = string(1, character);
     return make_shared<Token>(tokens.contains(literal) ? tokens.at(literal)()
                                                        : make_shared<Token>());
+  }
+
+public:
+  Lexer(const string &source) {
+    this->source = source;
+    for (const auto op : operators::literals) {
+      auto literal = op.second;
+      switch (auto token = op.first) {
+      case Token::Type::Minus:
+        tokens.insert(
+            make_pair(literal, [this, literal]() -> shared_ptr<Token> {
+              if (this->character == '-' && is(peek()).digit()) {
+                return make_shared<Token>(Token::Type::Number,
+                                          read(Reader::Number));
+              }
+              return make_shared<Token>(Token::Type::Minus, literal);
+            }));
+        continue;
+      default:
+        tokens.insert(
+            make_pair(literal, [this, literal]() -> shared_ptr<Token> {
+              return make_shared<Token>(operators::tokens.at(literal), literal);
+            }));
+        continue;
+      }
+    }
+
+    for (const auto block : blocks::literals) {
+      auto literal = block.second;
+      switch (auto token = block.first) {
+      case Token::Type::Quote:
+      case Token::Type::DoubleQuote:
+        tokens.insert(
+            make_pair(literal, [this, literal]() -> shared_ptr<Token> {
+              next(); // skip start quote
+              auto token = make_shared<Token>(
+                  Token::Type::String, (boost::format("%1%%2%%3%") % literal %
+                                        read(Reader::String) % literal)
+                                           .str());
+              next(); // skip end quote
+              return token;
+            }));
+        continue;
+      default:
+        tokens.insert(
+            make_pair(literal, [this, literal]() -> shared_ptr<Token> {
+              return make_shared<Token>(blocks::tokens.at(literal), literal);
+            }));
+        continue;
+      }
+    }
+
+    next();
   }
 
   /**
