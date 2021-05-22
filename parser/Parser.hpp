@@ -9,6 +9,8 @@
 #include "../ast/Expression.hpp"
 #include "../ast/ExpressionStatement.hpp"
 #include "../ast/Statement.hpp"
+#include "../ast/statement/LetStatement.hpp"
+
 #include "../lexer/Lexer.hpp"
 #include "../token/Token.hpp"
 
@@ -81,7 +83,7 @@ private:
       return nullptr;
     }
     auto expression = literal_parser.at(type)();
-    if (current_token->get_type() != Token::Type::Semicolon &&
+    if (current_token->is(Token::Type::Semicolon) &&
         rank < priority(peeked_token->get_type())) {
       type = peeked_token->get_type();
       return expression_parser.contains(type)
@@ -92,14 +94,14 @@ private:
   }
 
   shared_ptr<Statement> parser_expression_statement() {
-    if (current_token->get_type() == Token::Type::Semicolon) {
+    if (current_token->is(Token::Type::Semicolon)) {
       return nullptr;
     }
 
     auto statement = make_shared<ExpressionStatement>(current_token);
     statement->set_expression(parse_expression());
 
-    if (peeked_token->get_type() == Token::Type::Semicolon) {
+    if (peeked_token->is(Token::Type::Semicolon)) {
       next();
     }
 
@@ -114,8 +116,11 @@ public:
 
     statement_parser.insert(
         pair(Token::Type::Let, [this]() -> shared_ptr<Statement> {
-          auto type = current_token->get_type();
-          return nullptr;
+          auto statement = make_shared<LetStatement>(current_token);
+          next();
+          if (current_token->is(Token::Type::Identifier)) {
+          }
+          return statement;
         }));
   }
 

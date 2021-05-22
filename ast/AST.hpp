@@ -11,7 +11,6 @@ private:
   vector<shared_ptr<Statement>> statements;
 
 public:
-  AST() {}
   /**
    * @brief Add new statement to AST
    *

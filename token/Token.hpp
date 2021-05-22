@@ -161,24 +161,6 @@ public:
   string get_literal() const { return this->literal; }
 
   /**
-   * @brief
-   *
-   * @param type
-   * @return true
-   * @return false
-   */
-  bool operator==(const Type &type) { return is(type); }
-
-  /**
-   * @brief
-   *
-   * @param type
-   * @return true
-   * @return false
-   */
-  bool operator!=(const Type &type) { return !is(type); }
-
-  /**
    * @brief Check token is end of source code
    *
    * @return true if end
@@ -187,6 +169,15 @@ public:
   bool end() const {
     return this->is(Type::EndOfFile) || this->is(Type::Illegal);
   }
+
+  /**
+   * @brief
+   *
+   * @param type
+   * @return true
+   * @return false
+   */
+  bool is(Type type) const { return this->type == type; }
 
 private:
   /**
@@ -198,13 +189,4 @@ private:
    * @brief Literal of token
    */
   string literal;
-
-  /**
-   * @brief
-   *
-   * @param type
-   * @return true
-   * @return false
-   */
-  bool is(Type type) const { return this->type == type; }
 };

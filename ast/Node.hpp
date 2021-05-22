@@ -21,7 +21,7 @@ protected:
    *
    * @param token
    */
-  Node(const shared_ptr<Token> token) { this->token = token; }
+  Node(const shared_ptr<Token> &token) { this->token = token; }
 
   /**
    * @brief Get the literal
