@@ -113,12 +113,14 @@ public:
     next(2);
 
     statement_parser.insert(
-        pair(Token::Type::Let,
-             [this]() -> shared_ptr<Statement> { return nullptr; }));
+        pair(Token::Type::Let, [this]() -> shared_ptr<Statement> {
+          auto type = current_token->get_type();
+          return nullptr;
+        }));
   }
 
   shared_ptr<INode> parse() {
-    auto ast = make_shared<AST>(current_token);
+    auto ast = make_shared<AST>();
     while (!current_token->end()) {
       auto statement = parser_statement();
       if (statement == nullptr) {

@@ -1,13 +1,12 @@
 #include <iostream>
 
+#include <memory>
+
 #include "lexer/Lexer.hpp"
-#include <boost/foreach.hpp>
+#include "parser/Parser.hpp"
 
 int main() {
   auto lexer = make_shared<Lexer>("let a = fn (a, b) => a + b;");
-  auto token = lexer->next_token();
-  while (!token->end()) {
-    token = lexer->next_token();
-    cout << (boost::format("[%1%]") % token->get_literal()).str() << endl;
-  }
+  auto parser = make_shared<Parser>(lexer);
+  cout << parser->parse()->source() << endl;
 }
