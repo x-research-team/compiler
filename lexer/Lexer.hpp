@@ -1,7 +1,5 @@
 #pragma once
 
-#include <boost/algorithm/string/trim.hpp>
-#include <boost/format.hpp>
 #include <cctype>
 #include <cstddef>
 #include <cstdint>
@@ -11,6 +9,9 @@
 #include <memory>
 #include <string>
 #include <utility>
+
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/format.hpp>
 
 #include "../token/Blocks.hpp"
 #include "../token/Keyword.hpp"

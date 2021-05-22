@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Node.hpp"
 #include <memory>
+
+#include "Node.hpp"
 
 class Expression : public Node {
 public:

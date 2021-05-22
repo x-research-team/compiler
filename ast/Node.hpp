@@ -1,8 +1,9 @@
 #pragma once
 
+#include <memory>
+
 #include "../token/Token.hpp"
 #include "INode.hpp"
-#include <memory>
 
 /**
  * @brief Is a implementation of AST node

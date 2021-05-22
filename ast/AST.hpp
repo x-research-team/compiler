@@ -1,9 +1,10 @@
 #pragma once
 
-#include "INode.hpp"
-#include "Statement.hpp"
 #include <memory>
 #include <vector>
+
+#include "INode.hpp"
+#include "Statement.hpp"
 
 class AST : public INode {
 private:

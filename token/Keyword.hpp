@@ -1,8 +1,9 @@
 #pragma once
 
+#include <map>
+
 #include "FlipMap.hpp"
 #include "Token.hpp"
-#include <map>
 #include <string>
 
 using namespace std;
