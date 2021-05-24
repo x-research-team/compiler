@@ -18,7 +18,7 @@ if(Boost_FOUND)
       lexer/Lexer.hpp
       parser/Parser.hpp
       ast/INode.hpp ast/Node.hpp ast/AST.hpp ast/Expression.hpp ast/Statement.hpp
-      ast/ExpressionStatement.hpp ast/statement/LetStatement.hpp
+      ast/ExpressionStatement.hpp ast/statement/Let.hpp
   )
   target_link_libraries(compiler ${Boost_LIBRARIES})
 endif()

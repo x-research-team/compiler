@@ -9,7 +9,10 @@
 #include "../ast/Expression.hpp"
 #include "../ast/ExpressionStatement.hpp"
 #include "../ast/Statement.hpp"
-#include "../ast/statement/LetStatement.hpp"
+
+#include "../ast/statement/Let.hpp"
+
+#include "../ast/expression/Identifier.hpp"
 
 #include "../lexer/Lexer.hpp"
 #include "../token/Token.hpp"
@@ -116,11 +119,28 @@ public:
 
     statement_parser.insert(
         pair(Token::Type::Let, [this]() -> shared_ptr<Statement> {
-          auto statement = make_shared<LetStatement>(current_token);
-          next();
-          if (current_token->is(Token::Type::Identifier)) {
+          auto statement = make_shared<Let>(current_token);
+          next(); // current token is let, skip it
+          while (!current_token->is(Token::Type::Semicolon)) {
+            if (current_token->is(Token::Type::Identifier)) {
+              auto identifier = parse_expression();
+              statement->set_identifier(identifier);
+              next();
+            }
+            if (!current_token->is(Token::Type::Assign)) {
+              return nullptr;
+            }
+            next();
+            auto expression = parse_expression();
+            statement->set_value(expression);
+            next();
           }
           return statement;
+        }));
+
+    literal_parser.insert(
+        pair(Token::Type::Identifier, [this]() -> shared_ptr<Expression> {
+          return make_shared<Identifier>(current_token);
         }));
   }
 
