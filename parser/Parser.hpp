@@ -10,9 +10,15 @@
 #include "../ast/ExpressionStatement.hpp"
 #include "../ast/Statement.hpp"
 
-#include "../ast/statement/Let.hpp"
+#include "../ast/expression/BinaryOperation.hpp"
 
-#include "../ast/expression/Identifier.hpp"
+#include "../ast/statement/Let.hpp"
+#include "../ast/statement/Return.hpp"
+
+#include "../ast/literal/Bool.hpp"
+#include "../ast/literal/Function.hpp"
+#include "../ast/literal/Identifier.hpp"
+#include "../ast/literal/Number.hpp"
 
 #include "../lexer/Lexer.hpp"
 #include "../token/Token.hpp"
@@ -53,7 +59,7 @@ private:
   }
 
   /**
-   * @brief Switch tokens pair
+   * @brief Switch tokens make_pair
    *
    * @param step number of steps to switch
    */
@@ -73,7 +79,7 @@ private:
   map<Token::Type, literal_parser_fn> literal_parser;
   map<Token::Type, expression_parser_fn> expression_parser;
 
-  shared_ptr<Statement> parser_statement() {
+  shared_ptr<Statement> parse_statement() {
     auto type = current_token->get_type();
     return statement_parser.contains(type) ? statement_parser.at(type)()
                                            : nullptr;
@@ -86,7 +92,7 @@ private:
       return nullptr;
     }
     auto expression = literal_parser.at(type)();
-    if (current_token->is(Token::Type::Semicolon) &&
+    if (!current_token->is(Token::Type::Semicolon) &&
         rank < priority(peeked_token->get_type())) {
       type = peeked_token->get_type();
       return expression_parser.contains(type)
@@ -96,7 +102,7 @@ private:
     return expression;
   }
 
-  shared_ptr<Statement> parser_expression_statement() {
+  shared_ptr<Statement> parse_expression_statement() {
     if (current_token->is(Token::Type::Semicolon)) {
       return nullptr;
     }
@@ -111,6 +117,36 @@ private:
     return statement;
   }
 
+  /**
+   * @brief Make AST node and skip current token
+   *
+   * @tparam T = Statement | Expression
+   * @return shared_ptr<Statement | Expression>
+   */
+  template <typename T> shared_ptr<T> make(const bool skip = true) {
+    auto statement = make_shared<T>(current_token);
+    if (skip) {
+      next();
+    }
+    return statement;
+  }
+
+  bool current_token_is(const Token::Type type) {
+    if (!current_token->is(type)) {
+      return false;
+    }
+    next();
+    return true;
+  }
+
+  bool peeked_token_is(const Token::Type type) {
+    if (!peeked_token->is(type)) {
+      return false;
+    }
+    next();
+    return true;
+  }
+
 public:
   Parser(const shared_ptr<Lexer> lexer) {
     this->lexer = lexer;
@@ -118,41 +154,93 @@ public:
     next(2);
 
     statement_parser.insert(
-        pair(Token::Type::Let, [this]() -> shared_ptr<Statement> {
-          auto statement = make_shared<Let>(current_token);
-          next(); // current token is let, skip it
+        make_pair(Token::Type::Let, [this]() -> shared_ptr<Statement> {
+          auto statement = make<Let>();
           while (!current_token->is(Token::Type::Semicolon)) {
             if (current_token->is(Token::Type::Identifier)) {
-              auto identifier = parse_expression();
-              statement->set_identifier(identifier);
+              statement->set_identifier(parse_expression());
               next();
             }
-            if (!current_token->is(Token::Type::Assign)) {
+            if (!current_token_is(Token::Type::Assign)) {
               return nullptr;
             }
-            next();
-            auto expression = parse_expression();
-            statement->set_value(expression);
-            next();
+            statement->set_value(parse_expression());
           }
+          return statement;
+        }));
+    statement_parser.insert(
+        make_pair(Token::Type::Return, [this]() -> shared_ptr<Statement> {
+          auto statement = make<Return>();
+          statement->set_value(parse_expression());
+          next();
           return statement;
         }));
 
     literal_parser.insert(
-        pair(Token::Type::Identifier, [this]() -> shared_ptr<Expression> {
-          return make_shared<Identifier>(current_token);
+        make_pair(Token::Type::Identifier, [this]() -> shared_ptr<Expression> {
+          return make<Identifier>(false);
+        }));
+    literal_parser.insert(
+        make_pair(Token::Type::Number, [this]() -> shared_ptr<Expression> {
+          return make<Number>(false);
+        }));
+    literal_parser.insert(
+        make_pair(Token::Type::True, [this]() -> shared_ptr<Expression> {
+          return make<Bool>(false);
+        }));
+    literal_parser.insert(
+        make_pair(Token::Type::False, [this]() -> shared_ptr<Expression> {
+          return make<Bool>(false);
+        }));
+    literal_parser.insert(
+        make_pair(Token::Type::Function, [this]() -> shared_ptr<Expression> {
+          auto literal = make<Function>();
+          if (current_token_is(Token::Type::LeftParen)) {
+            while (!current_token->is(Token::Type::RightParen)) {
+              if (current_token_is(Token::Type::Comma)) {
+                continue;
+              }
+              if (current_token->is(Token::Type::Identifier)) {
+                literal->add_paramenter(parse_expression());
+                next();
+                continue;
+              }
+            }
+            next();
+          }
+
+          if (current_token_is(Token::Type::LeftBrace)) {
+            while (!current_token->is(Token::Type::RightBrace)) {
+              literal->add_statement(parse_statement());
+              next();
+              continue;
+            }
+            next();
+          }
+
+          return literal;
+        }));
+
+    expression_parser.insert(make_pair(
+        Token::Type::Plus,
+        [this](const shared_ptr<Expression> &left) -> shared_ptr<Expression> {
+          next();
+          auto expression = make<BinaryOperation>();
+          expression->set_left(left);
+          expression->set_right(parse_expression());
+          return expression;
         }));
   }
 
   shared_ptr<INode> parse() {
     auto ast = make_shared<AST>();
     while (!current_token->end()) {
-      auto statement = parser_statement();
+      auto statement = parse_statement();
       if (statement == nullptr) {
-        statement = parser_expression_statement();
+        statement = parse_expression_statement();
       }
       if (statement != nullptr) {
-        ast->add(statement);
+        ast->add_statement(statement);
       }
       next();
     }

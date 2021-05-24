@@ -16,7 +16,7 @@ public:
    *
    * @param statement Source statement
    */
-  void add(const shared_ptr<Statement> statement) {
+  void add_statement(const shared_ptr<Statement> statement) {
     this->statements.push_back(statement);
   }
 

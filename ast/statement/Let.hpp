@@ -1,14 +1,14 @@
 #pragma once
 
+#include <map>
 #include <memory>
 #include <vector>
-#include <map>
 
 #include <boost/format.hpp>
-#include <vector>
 
 #include "../Statement.hpp"
-#include "../expression/Identifier.hpp"
+
+#include "../literal/Identifier.hpp"
 
 /**
  * @brief let statetemt has 5 variants of present
@@ -25,7 +25,8 @@ private:
   shared_ptr<Expression> value;
   map<shared_ptr<Expression>, shared_ptr<Expression>> values;
 
-      public : Let(const shared_ptr<Token> &token) : Statement(token) {}
+public:
+  Let(const shared_ptr<Token> &token) : Statement(token) {}
 
   /**
    * @brief Set the identifier
@@ -41,9 +42,7 @@ private:
    *
    * @param value
    */
-  void set_value(const shared_ptr<Expression> &value) {
-    this->value = value;
-  }
+  void set_value(const shared_ptr<Expression> &value) { this->value = value; }
 
   string source() const override {
     return (boost::format("%1% %2% = %3%;") % get_literal() %

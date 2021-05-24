@@ -17,7 +17,7 @@ if(Boost_FOUND)
       token/Token.hpp token/Blocks.hpp token/FlipMap.hpp token/Keyword.hpp token/Operators.hpp
       lexer/Lexer.hpp
       parser/Parser.hpp
-      ast/INode.hpp ast/Node.hpp ast/AST.hpp ast/Expression.hpp ast/Statement.hpp
+      ast/INode.hpp ast/literal/Identifier.hpp ast/Node.hpp ast/AST.hpp ast/Expression.hpp ast/Statement.hpp
       ast/ExpressionStatement.hpp ast/statement/Let.hpp
   )
   target_link_libraries(compiler ${Boost_LIBRARIES})
