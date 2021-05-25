@@ -4,6 +4,7 @@
 
 #include "../Expression.hpp"
 
+namespace L {
 class Identifier : public Expression {
 private:
   string value;
@@ -15,3 +16,4 @@ public:
 
   string source() const override { return value; }
 };
+} // namespace L

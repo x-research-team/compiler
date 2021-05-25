@@ -18,6 +18,7 @@
  * 4. let (<identifier>...<identifier>) = <expression>;
  * 5. let [<identifier>...<identifier>] = <expression>;
  */
+namespace S {
 class Let : public Statement {
 private:
   shared_ptr<Expression> identifier;
@@ -50,3 +51,4 @@ public:
         .str();
   }
 };
+} // namespace S

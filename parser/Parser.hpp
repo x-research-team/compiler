@@ -4,6 +4,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <utility>
 
 #include "../ast/AST.hpp"
 #include "../ast/Expression.hpp"
@@ -12,6 +13,7 @@
 
 #include "../ast/expression/BinaryOperation.hpp"
 
+#include "../ast/statement/Function.hpp"
 #include "../ast/statement/Let.hpp"
 #include "../ast/statement/Return.hpp"
 
@@ -123,11 +125,9 @@ private:
    * @tparam T = Statement | Expression
    * @return shared_ptr<Statement | Expression>
    */
-  template <typename T> shared_ptr<T> make(const bool skip = true) {
+  template <typename T> shared_ptr<T> make(const int n) {
     auto statement = make_shared<T>(current_token);
-    if (skip) {
-      next();
-    }
+    next(n);
     return statement;
   }
 
@@ -147,15 +147,24 @@ private:
     return true;
   }
 
+  /**
+   * @brief Sugar for skip number paramenter
+   *
+   * @param n how many skips
+   * @return int skip count
+   */
+  int skip(const int n) const { return n; }
+
 public:
   Parser(const shared_ptr<Lexer> lexer) {
     this->lexer = lexer;
 
     next(2);
 
+    // FILL STATEMENT PARSERS
     statement_parser.insert(
         make_pair(Token::Type::Let, [this]() -> shared_ptr<Statement> {
-          auto statement = make<Let>();
+          auto statement = make<S::Let>(skip(1));
           while (!current_token->is(Token::Type::Semicolon)) {
             if (current_token->is(Token::Type::Identifier)) {
               statement->set_identifier(parse_expression());
@@ -170,31 +179,65 @@ public:
         }));
     statement_parser.insert(
         make_pair(Token::Type::Return, [this]() -> shared_ptr<Statement> {
-          auto statement = make<Return>();
+          auto statement = make<S::Return>(skip(1));
           statement->set_value(parse_expression());
           next();
           return statement;
         }));
+    statement_parser.insert(
+        make_pair(Token::Type::Function, [this]() -> shared_ptr<Statement> {
+          auto statement = make<S::Function>(skip(1));
+          if (current_token->is(Token::Type::Identifier)) {
+            statement->set_name(parse_expression());
+            next();
+          }
 
+          if (current_token_is(Token::Type::LeftParen)) {
+            while (!current_token->is(Token::Type::RightParen)) {
+              if (current_token_is(Token::Type::Comma)) {
+                continue;
+              }
+              if (current_token->is(Token::Type::Identifier)) {
+                statement->add_paramenter(parse_expression());
+                next();
+                continue;
+              }
+            }
+            next();
+          }
+
+          if (current_token_is(Token::Type::LeftBrace)) {
+            while (!current_token->is(Token::Type::RightBrace)) {
+              statement->add_statement(parse_statement());
+              next();
+              continue;
+            }
+            next();
+          }
+
+          return statement;
+        }));
+
+    // FILL LITERAL PARSERS
     literal_parser.insert(
         make_pair(Token::Type::Identifier, [this]() -> shared_ptr<Expression> {
-          return make<Identifier>(false);
+          return make<L::Identifier>(skip(0));
         }));
     literal_parser.insert(
         make_pair(Token::Type::Number, [this]() -> shared_ptr<Expression> {
-          return make<Number>(false);
+          return make<L::Number>(skip(0));
         }));
     literal_parser.insert(
         make_pair(Token::Type::True, [this]() -> shared_ptr<Expression> {
-          return make<Bool>(false);
+          return make<L::Bool>(skip(0));
         }));
     literal_parser.insert(
         make_pair(Token::Type::False, [this]() -> shared_ptr<Expression> {
-          return make<Bool>(false);
+          return make<L::Bool>(skip(0));
         }));
     literal_parser.insert(
         make_pair(Token::Type::Function, [this]() -> shared_ptr<Expression> {
-          auto literal = make<Function>();
+          auto literal = make<L::Function>(skip(1));
           if (current_token_is(Token::Type::LeftParen)) {
             while (!current_token->is(Token::Type::RightParen)) {
               if (current_token_is(Token::Type::Comma)) {
@@ -221,17 +264,23 @@ public:
           return literal;
         }));
 
+    // FILL EXPRESSION PARSERS
     expression_parser.insert(make_pair(
         Token::Type::Plus,
         [this](const shared_ptr<Expression> &left) -> shared_ptr<Expression> {
           next();
-          auto expression = make<BinaryOperation>();
+          auto expression = make<E::BinaryOperation>(skip(1));
           expression->set_left(left);
           expression->set_right(parse_expression());
           return expression;
         }));
   }
 
+  /**
+   * @brief Parse source code statements
+   *
+   * @return shared_ptr<INode>
+   */
   shared_ptr<INode> parse() {
     auto ast = make_shared<AST>();
     while (!current_token->end()) {

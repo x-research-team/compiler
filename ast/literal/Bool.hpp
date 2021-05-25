@@ -4,6 +4,7 @@
 
 #include "../Expression.hpp"
 
+namespace L {
 class Bool : public Expression {
 private:
   bool value;
@@ -16,3 +17,4 @@ public:
 
   string source() const override { return value ? "true" : "false"; }
 };
+} // namespace L

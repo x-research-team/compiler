@@ -6,6 +6,7 @@
 
 #include "../Expression.hpp"
 
+namespace E {
 class BinaryOperation : public Expression {
 private:
   shared_ptr<Expression> left;
@@ -28,3 +29,4 @@ public:
         .str();
   }
 };
+} // namespace E
