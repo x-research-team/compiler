@@ -7,12 +7,12 @@
 
 class ExpressionStatement : public Statement {
 private:
-  shared_ptr<Expression> expression;
+  expression_t expression;
 
 public:
-  ExpressionStatement(const shared_ptr<Token> &token) : Statement(token) {}
+  ExpressionStatement(const token_t &token) : Statement(token) {}
 
-  void set_expression(const shared_ptr<Expression> &expression) {
+  void set_expression(const expression_t &expression) {
     this->expression = expression;
   }
 

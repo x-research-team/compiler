@@ -11,18 +11,18 @@
 namespace L {
 class Function : public Expression {
 private:
-  shared_ptr<Expression> name;
-  vector<shared_ptr<Expression>> arguments;
-  vector<shared_ptr<Statement>> statements;
+  expression_t name;
+  vector<expression_t> arguments;
+  vector<statement_t> statements;
 
 public:
-  Function(const shared_ptr<Token> &token) : Expression(token) {}
+  Function(const token_t &token) : Expression(token) {}
 
-  void add_paramenter(const shared_ptr<Expression> &paramenter) {
+  void add_paramenter(const expression_t &paramenter) {
     arguments.push_back(paramenter);
   }
 
-  void add_statement(const shared_ptr<Statement> &statement) {
+  void add_statement(const statement_t &statement) {
     statements.push_back(statement);
   }
 
@@ -38,9 +38,8 @@ public:
       body.push_back(statement->source());
     }
 
-    return (boost::format("%1% (%2%) { %3% }") % get_literal() %
-            boost::algorithm::join(args, ", ") %
-            boost::algorithm::join(body, " "))
+    return (fmt("%1% (%2%) { %3% }") % get_literal() % join(args, ", ") %
+            join(body, " "))
         .str();
   }
 };

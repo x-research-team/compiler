@@ -10,7 +10,7 @@ private:
   string value;
 
 public:
-  Identifier(const shared_ptr<Token> &token) : Expression(token) {
+  Identifier(const token_t &token) : Expression(token) {
     value = token->get_literal();
   }
 

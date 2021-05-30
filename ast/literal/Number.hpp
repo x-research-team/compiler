@@ -10,9 +10,7 @@ private:
   string value;
 
 public:
-  Number(const shared_ptr<Token> &token) : Expression(token) {
-    value = get_literal();
-  }
+  Number(const token_t &token) : Expression(token) { value = get_literal(); }
 
   string source() const override { return value; }
 };

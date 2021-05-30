@@ -8,7 +8,7 @@
 
 class AST : public INode {
 private:
-  vector<shared_ptr<Statement>> statements;
+  vector<statement_t> statements;
 
 public:
   /**
@@ -16,7 +16,7 @@ public:
    *
    * @param statement Source statement
    */
-  void add_statement(const shared_ptr<Statement> statement) {
+  void add_statement(const statement_t statement) {
     this->statements.push_back(statement);
   }
 

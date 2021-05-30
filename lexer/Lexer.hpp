@@ -19,6 +19,7 @@
 #include "../token/Token.hpp"
 
 using namespace std;
+using namespace boost::algorithm;
 
 class Lexer {
 public:
@@ -53,7 +54,7 @@ private:
      * @return true if is "|'
      * @return false otherwise
      */
-    bool string() const { return character == '"' || character == '\''; }
+    bool string() const { return character == '"' || character == '\'' || character == '`'; }
 
     /**
      * @brief Check to character is block kind
@@ -98,7 +99,7 @@ private:
    */
   void next(const uint64_t step = 1) {
     for (auto i = 0; i < step; i++) {
-      this->character = peek(1);
+      this->character = peek();
       this->position = this->read_position;
       ++this->read_position;
     }
@@ -124,7 +125,7 @@ private:
     }
   }
 
-  map<string, function<shared_ptr<Token>()>> tokens;
+  map<string, function<token_t()>> tokens;
 
   /**
    * @brief Read token literal
@@ -182,19 +183,19 @@ private:
       auto next = this->character != 0 ? string(1, this->character) : "";
       auto literal =
           (string(1, character) + (is(this->character).block() ? "" : next));
-      boost::algorithm::trim(literal);
+      trim(literal);
       return literal;
     }
     return this->source.substr(position, this->position - position);
   }
 
-  shared_ptr<Token> make_token(const string &literal, const uint64_t skip = 0) {
+  token_t make_token(const string &literal, const uint64_t skip = 0) {
     next(skip);
     return tokens.contains(literal) ? tokens.at(literal)()
                                     : make_shared<Token>();
   }
 
-  shared_ptr<Token> make_token(const char character, const uint64_t skip = 0) {
+  token_t make_token(const char character, const uint64_t skip = 0) {
     next(skip);
     auto literal = string(1, character);
     return tokens.contains(literal) ? tokens.at(literal)()
@@ -208,20 +209,18 @@ public:
       auto literal = op.second;
       switch (auto token = op.first) {
       case Token::Type::Minus:
-        tokens.insert(
-            make_pair(literal, [this, literal]() -> shared_ptr<Token> {
-              if (this->character == '-' && is(peek()).digit()) {
-                return make_shared<Token>(Token::Type::Number,
-                                          read(Reader::Number));
-              }
-              return make_shared<Token>(Token::Type::Minus, literal);
-            }));
+        tokens.insert(make_pair(literal, [this, literal]() -> token_t {
+          if (this->character == '-' && is(peek()).digit()) {
+            return make_shared<Token>(Token::Type::Number,
+                                      read(Reader::Number));
+          }
+          return make_shared<Token>(Token::Type::Minus, literal);
+        }));
         continue;
       default:
-        tokens.insert(
-            make_pair(literal, [this, literal]() -> shared_ptr<Token> {
-              return make_shared<Token>(operators::tokens.at(literal), literal);
-            }));
+        tokens.insert(make_pair(literal, [this, literal]() -> token_t {
+          return make_shared<Token>(operators::tokens.at(literal), literal);
+        }));
         continue;
       }
     }
@@ -232,7 +231,7 @@ public:
       case Token::Type::Quote:
       case Token::Type::DoubleQuote:
         tokens.insert(
-            make_pair(literal, [this, literal]() -> shared_ptr<Token> {
+            make_pair(literal, [this, literal]() -> token_t {
               next(); // skip start quote
               auto token = make_shared<Token>(
                   Token::Type::String, (boost::format("%1%%2%%3%") % literal %
@@ -243,10 +242,9 @@ public:
             }));
         continue;
       default:
-        tokens.insert(
-            make_pair(literal, [this, literal]() -> shared_ptr<Token> {
-              return make_shared<Token>(blocks::tokens.at(literal), literal);
-            }));
+        tokens.insert(make_pair(literal, [this, literal]() -> token_t {
+          return make_shared<Token>(blocks::tokens.at(literal), literal);
+        }));
         continue;
       }
     }
@@ -257,9 +255,9 @@ public:
   /**
    * @brief Move to next token in source
    *
-   * @return shared_ptr<Token>
+   * @return token_t
    */
-  shared_ptr<Token> next_token() {
+  token_t next_token() {
     skip();
 
     if (this->character == 0) {

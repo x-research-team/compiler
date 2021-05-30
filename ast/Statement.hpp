@@ -11,5 +11,5 @@ public:
   string source() const override { return this->get_literal(); }
 
 protected:
-  Statement(const shared_ptr<Token> &token) : Node(token) {}
+  Statement(const token_t &token) : Node(token) {}
 };

@@ -10,7 +10,7 @@ private:
   bool value;
 
 public:
-  Bool(const shared_ptr<Token> &token) : Expression(token) {
+  Bool(const token_t &token) : Expression(token) {
     auto literal = get_literal();
     value = literal == "true";
   }

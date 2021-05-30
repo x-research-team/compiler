@@ -2,26 +2,27 @@
 
 #include <memory>
 
+#include <boost/algorithm/string/join.hpp>
+#include <boost/format.hpp>
+
 #include "../token/Token.hpp"
 #include "INode.hpp"
+
+using namespace boost::algorithm;
 
 /**
  * @brief Is a implementation of AST node
  */
 class Node : public INode {
-private:
-  /**
-   * @brief Token in AST node
-   */
-  shared_ptr<Token> token;
-
 protected:
+  using fmt = boost::format;
+  
   /**
    * @brief Construct a new Node object
    *
    * @param token
    */
-  Node(const shared_ptr<Token> &token) { this->token = token; }
+  Node(const token_t &token) { this->token = token; }
 
   /**
    * @brief Get the literal
@@ -36,4 +37,10 @@ protected:
    * @return Token::Type
    */
   Token::Type get_token_type() const { return this->token->get_type(); }
+
+private:
+  /**
+   * @brief Token in AST node
+   */
+  token_t token;
 };

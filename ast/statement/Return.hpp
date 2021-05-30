@@ -10,20 +10,20 @@
 namespace S {
 class Return : public Statement {
 private:
-  shared_ptr<Expression> value;
+  expression_t value;
 
 public:
-  Return(const shared_ptr<Token> &token) : Statement(token) {}
+  Return(const token_t &token) : Statement(token) {}
 
   /**
    * @brief Set the value for return
    *
    * @param value
    */
-  void set_value(const shared_ptr<Expression> &value) { this->value = value; }
+  void set_value(const expression_t &value) { this->value = value; }
 
   string source() const override {
-    return (boost::format("%1% %2%;") % get_literal() % value->source()).str();
+    return (fmt("%1% %2%;") % get_literal() % value->source()).str();
   }
 };
 } // namespace S

@@ -31,8 +31,8 @@ class Parser {
 private:
   shared_ptr<Lexer> lexer;
 
-  shared_ptr<Token> current_token;
-  shared_ptr<Token> peeked_token;
+  token_t current_token;
+  token_t peeked_token;
 
   enum class OperationPriority {
     Minimal,

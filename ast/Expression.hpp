@@ -9,5 +9,5 @@ public:
   string source() const override { return this->get_literal(); }
 
 protected:
-  Expression(const shared_ptr<Token> &token) : Node(token) {}
+  Expression(const token_t &token) : Node(token) {}
 };

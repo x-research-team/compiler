@@ -21,20 +21,20 @@
 namespace S {
 class Let : public Statement {
 private:
-  shared_ptr<Expression> identifier;
-  vector<shared_ptr<Expression>> identifiers;
-  shared_ptr<Expression> value;
-  map<shared_ptr<Expression>, shared_ptr<Expression>> values;
+  expression_t identifier;
+  vector<expression_t> identifiers;
+  expression_t value;
+  map<expression_t, expression_t> values;
 
 public:
-  Let(const shared_ptr<Token> &token) : Statement(token) {}
+  Let(const token_t &token) : Statement(token) {}
 
   /**
    * @brief Set the identifier
    *
    * @param identifier
    */
-  void set_identifier(const shared_ptr<Expression> &identifier) {
+  void set_identifier(const expression_t &identifier) {
     this->identifier = identifier;
   }
 
@@ -43,10 +43,10 @@ public:
    *
    * @param value
    */
-  void set_value(const shared_ptr<Expression> &value) { this->value = value; }
+  void set_value(const expression_t &value) { this->value = value; }
 
   string source() const override {
-    return (boost::format("%1% %2% = %3%;") % get_literal() %
+    return (fmt("%1% %2% = %3%;") % get_literal() %
             identifier->source() % value->source())
         .str();
   }

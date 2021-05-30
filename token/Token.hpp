@@ -190,3 +190,5 @@ private:
    */
   string literal;
 };
+
+using token_t = shared_ptr<Token>;

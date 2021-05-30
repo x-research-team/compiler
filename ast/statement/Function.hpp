@@ -2,31 +2,26 @@
 
 #include <memory>
 
-#include <boost/algorithm/string/join.hpp>
-#include <boost/format.hpp>
-
 #include "../Expression.hpp"
 #include "../Statement.hpp"
 
 namespace S {
 class Function : public Statement {
 private:
-  shared_ptr<Expression> name;
-  vector<shared_ptr<Expression>> arguments;
-  vector<shared_ptr<Statement>> statements;
+  expression_t name;
+  vector<expression_t> arguments;
+  vector<statement_t> statements;
 
 public:
-  Function(const shared_ptr<Token> &token) : Statement(token) {}
+  Function(const token_t &token) : Statement(token) {}
 
-  void set_name(const shared_ptr<Expression> &identifier) {
-    this->name = identifier;
-  }
+  void set_name(const expression_t &identifier) { this->name = identifier; }
 
-  void add_paramenter(const shared_ptr<Expression> &paramenter) {
+  void add_paramenter(const expression_t &paramenter) {
     arguments.push_back(paramenter);
   }
 
-  void add_statement(const shared_ptr<Statement> &statement) {
+  void add_statement(const statement_t &statement) {
     statements.push_back(statement);
   }
 
@@ -42,9 +37,8 @@ public:
       body.push_back(statement->source());
     }
 
-    return (boost::format("%1% %2%(%3%) { %4% }") % get_literal() %
-            name->source() % boost::algorithm::join(args, ", ") %
-            boost::algorithm::join(body, " "))
+    return (fmt("%1% %2%(%3%) { %4% }") % get_literal() %
+            name->source() % join(args, ", ") % join(body, " "))
         .str();
   }
 };
