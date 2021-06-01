@@ -29,7 +29,11 @@ using namespace std;
 
 class Parser {
 private:
-  shared_ptr<Lexer> lexer;
+  using expression_t = shared_ptr<Expression>;
+  using statement_t = shared_ptr<Statement>;
+  using lexer_t = shared_ptr<Lexer>;
+
+  lexer_t lexer;
 
   token_t current_token;
   token_t peeked_token;
@@ -47,17 +51,19 @@ private:
     Index,
   };
 
-  const map<Token::Type, OperationPriority> priorities = {
-      {Token::Type::Plus, OperationPriority::Add},
-      {Token::Type::Minus, OperationPriority::Substract},
-      {Token::Type::Asterisk, OperationPriority::Multiplication},
-      {Token::Type::Slash, OperationPriority::Division},
-      {Token::Type::Assign, OperationPriority::Assign},
+  using priority_t = OperationPriority;
+
+  const map<Token::Type, priority_t> priorities = {
+      {Token::Type::Plus, priority_t::Add},
+      {Token::Type::Minus, priority_t::Substract},
+      {Token::Type::Asterisk, priority_t::Multiplication},
+      {Token::Type::Slash, priority_t::Division},
+      {Token::Type::Assign, priority_t::Assign},
   };
 
-  OperationPriority priority(Token::Type type) {
+  priority_t priority(Token::Type type) {
     return priorities.contains(type) ? priorities.at(type)
-                                     : OperationPriority::Minimal;
+                                     : priority_t::Minimal;
   }
 
   /**
@@ -72,23 +78,21 @@ private:
     }
   }
 
-  using statement_parser_fn = function<shared_ptr<Statement>()>;
-  using literal_parser_fn = function<shared_ptr<Expression>()>;
-  using expression_parser_fn =
-      function<shared_ptr<Expression>(shared_ptr<Expression>)>;
+  using statement_parser_fn = function<statement_t()>;
+  using literal_parser_fn = function<expression_t()>;
+  using expression_parser_fn = function<expression_t(expression_t)>;
 
   map<Token::Type, statement_parser_fn> statement_parser;
   map<Token::Type, literal_parser_fn> literal_parser;
   map<Token::Type, expression_parser_fn> expression_parser;
 
-  shared_ptr<Statement> parse_statement() {
+  statement_t parse_statement() {
     auto type = current_token->get_type();
     return statement_parser.contains(type) ? statement_parser.at(type)()
                                            : nullptr;
   }
 
-  shared_ptr<Expression>
-  parse_expression(const OperationPriority rank = OperationPriority::Minimal) {
+  expression_t parse_expression(const priority_t rank = priority_t::Minimal) {
     auto type = current_token->get_type();
     if (!literal_parser.contains(type)) {
       return nullptr;
@@ -104,7 +108,7 @@ private:
     return expression;
   }
 
-  shared_ptr<Statement> parse_expression_statement() {
+  statement_t parse_expression_statement() {
     if (current_token->is(Token::Type::Semicolon)) {
       return nullptr;
     }
@@ -159,11 +163,11 @@ public:
   Parser(const shared_ptr<Lexer> lexer) {
     this->lexer = lexer;
 
-    next(2);
+    next(skip(2));
 
     // FILL STATEMENT PARSERS
     statement_parser.insert(
-        make_pair(Token::Type::Let, [this]() -> shared_ptr<Statement> {
+        make_pair(Token::Type::Let, [this]() -> statement_t {
           auto statement = make<S::Let>(skip(1));
           while (!current_token->is(Token::Type::Semicolon)) {
             if (current_token->is(Token::Type::Identifier)) {
@@ -178,14 +182,14 @@ public:
           return statement;
         }));
     statement_parser.insert(
-        make_pair(Token::Type::Return, [this]() -> shared_ptr<Statement> {
+        make_pair(Token::Type::Return, [this]() -> statement_t {
           auto statement = make<S::Return>(skip(1));
           statement->set_value(parse_expression());
           next();
           return statement;
         }));
     statement_parser.insert(
-        make_pair(Token::Type::Function, [this]() -> shared_ptr<Statement> {
+        make_pair(Token::Type::Function, [this]() -> statement_t {
           auto statement = make<S::Function>(skip(1));
           if (current_token->is(Token::Type::Identifier)) {
             statement->set_name(parse_expression());
@@ -220,23 +224,21 @@ public:
 
     // FILL LITERAL PARSERS
     literal_parser.insert(
-        make_pair(Token::Type::Identifier, [this]() -> shared_ptr<Expression> {
+        make_pair(Token::Type::Identifier, [this]() -> expression_t {
           return make<L::Identifier>(skip(0));
         }));
     literal_parser.insert(
-        make_pair(Token::Type::Number, [this]() -> shared_ptr<Expression> {
+        make_pair(Token::Type::Number, [this]() -> expression_t {
           return make<L::Number>(skip(0));
         }));
     literal_parser.insert(
-        make_pair(Token::Type::True, [this]() -> shared_ptr<Expression> {
-          return make<L::Bool>(skip(0));
-        }));
+        make_pair(Token::Type::True,
+                  [this]() -> expression_t { return make<L::Bool>(skip(0)); }));
     literal_parser.insert(
-        make_pair(Token::Type::False, [this]() -> shared_ptr<Expression> {
-          return make<L::Bool>(skip(0));
-        }));
+        make_pair(Token::Type::False,
+                  [this]() -> expression_t { return make<L::Bool>(skip(0)); }));
     literal_parser.insert(
-        make_pair(Token::Type::Function, [this]() -> shared_ptr<Expression> {
+        make_pair(Token::Type::Function, [this]() -> expression_t {
           auto literal = make<L::Function>(skip(1));
           if (current_token_is(Token::Type::LeftParen)) {
             while (!current_token->is(Token::Type::RightParen)) {
@@ -266,8 +268,7 @@ public:
 
     // FILL EXPRESSION PARSERS
     expression_parser.insert(make_pair(
-        Token::Type::Plus,
-        [this](const shared_ptr<Expression> &left) -> shared_ptr<Expression> {
+        Token::Type::Plus, [this](const expression_t &left) -> expression_t {
           next();
           auto expression = make<E::BinaryOperation>(skip(1));
           expression->set_left(left);
@@ -276,12 +277,14 @@ public:
         }));
   }
 
+  using node_t = shared_ptr<INode>;
+
   /**
    * @brief Parse source code statements
    *
-   * @return shared_ptr<INode>
+   * @return node_t
    */
-  shared_ptr<INode> parse() {
+  node_t parse() {
     auto ast = make_shared<AST>();
     while (!current_token->end()) {
       auto statement = parse_statement();
