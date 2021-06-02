@@ -18,6 +18,7 @@
 #include "../ast/statement/Return.hpp"
 
 #include "../ast/literal/Bool.hpp"
+#include "../ast/literal/Class.hpp"
 #include "../ast/literal/Function.hpp"
 #include "../ast/literal/Identifier.hpp"
 #include "../ast/literal/Number.hpp"
@@ -73,8 +74,8 @@ private:
    */
   void next(const int step = 1) {
     for (auto i = 0; i < step; ++i) {
-      this->current_token = this->peeked_token;
-      this->peeked_token = lexer->next_token();
+      current_token = peeked_token;
+      peeked_token = lexer->next_token();
     }
   }
 
@@ -264,6 +265,11 @@ public:
           }
 
           return literal;
+        }));
+    literal_parser.insert(
+        make_pair(Token::Type::Class, [this]() -> expression_t {
+          auto expression = make<L::Class>(skip(1));
+          return expression;
         }));
 
     // FILL EXPRESSION PARSERS
