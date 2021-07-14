@@ -269,6 +269,25 @@ public:
     literal_parser.insert(
         make_pair(Token::Type::Class, [this]() -> expression_t {
           auto expression = make<L::Class>(skip(1));
+
+          if (current_token_is(Token::Type::Colon)) {
+            while (!current_token->is(Token::Type::LeftBrace)) {
+              if (current_token->is(Token::Type::Identifier)) {
+                auto inherance = parse_expression();
+                expression->add_inherence(inherance);
+              }
+              next();
+            }
+          }
+
+          if (!current_token_is(Token::Type::LeftBrace)) {
+            return nullptr;
+          }
+
+          while (current_token->is(Token::Type::RightBrace)) {
+            
+          }
+
           return expression;
         }));
 
